@@ -31,31 +31,28 @@
 /// THE SOFTWARE.
 
 import Foundation
+//1. Creates AnimalsMock that represents a response from the Petfinder API and makes it conform to Codable.
+//2. Creates a function that loads AnimalsMock.json and tries to decode it to an object of AnimalsMock. Then it returns the array of animals inside that object.
+//3. Automatically converts keys stored in the API as snake_case into camelCase. This way the properties in the struct will match the name of the ones in the JSON.
+//4. And finally, creates an extension of Animal to expose this mocked data to the rest of the project.
 
-// This model defines a type that represents an animal in your app’s domain. It has a couple of primitive properties for storing its traits, like name and species. The model also has a couple of custom types like Breed, which defines the animal’s breed, and PhotoSizes, to store URLs of each size of the animal picture.
+// 1
+private struct AnimalsMock: Codable {
+  let animals: [Animal]
+}
 
-struct Animal: Codable {
-  var id: Int?
-  let organizationId: String?
-  let url: URL?
-  let type: String
-  let species: String?
-  var breeds: Breed
-  var colors: APIColors
-  let age: Age
-  let gender: Gender
-  let size: Size
-  let coat: Coat?
-  let name: String
-  let description: String?
-  let photos: [PhotoSizes]
-  let videos: [VideoLink]
-  let status: AdoptionStatus
-  var attributes: AnimalAttributes
-  var environment: AnimalEnvironment?
-  let tags: [String]
-  var contact: Contact
-  let publishedAt: String?
-  let distance: Double?
-  var ranking: Int? = 0
+//2
+private func loadAnimals() -> [Animal] {
+  guard let url = Bundle.main.url(forResource: "AnimalsMock", withExtension: "json"),
+        let data = try? Data(contentsOf: url) else { return []}
+        let decoder = JSONDecoder()
+  //3
+  decoder.keyDecodingStrategy = .convertFromSnakeCase
+  let jsonMock = try? decoder.decode(AnimalsMock.self, from: data)
+  return jsonMock?.animals ?? []
+}
+
+//4
+extension Animal {
+  static let mock = loadAnimals()
 }
